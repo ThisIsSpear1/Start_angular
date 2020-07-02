@@ -12,7 +12,9 @@ import { MessageService } from './message.service';
 export class HeroService {
   private heroesUrl = 'api/heroes';  // URL to web api
   constructor(private http: HttpClient, private messageService: MessageService) { }
-
+  httpOptions = {
+    headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+  };
     /** GET heroes from the server */
   getHeroes(): Observable<Hero[]> {
     return this.http.get<Hero[]>(this.heroesUrl)
@@ -69,9 +71,15 @@ export class HeroService {
       catchError(this.handleError<Hero>('addHero'))
     );
   }
+  /** DELETE: delete the hero from the server */
+  deleteHero(hero: Hero | number): Observable<Hero> {
+    const id = typeof hero === 'number' ? hero : hero.id;
+    const url = `${this.heroesUrl}/${id}`;
 
-  httpOptions = {
-    headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-  };
+    return this.http.delete<Hero>(url, this.httpOptions).pipe(
+      tap(_ => this.log(`deleted hero id=${id}`)),
+      catchError(this.handleError<Hero>('deleteHero'))
+    );
+  }
 
 }
